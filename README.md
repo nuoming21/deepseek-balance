@@ -1,6 +1,6 @@
 # deepseek-balance
 
-Check your DeepSeek API account balance from the terminal. Also integrates as a Claude Code skill for real-time status line display.
+Check DeepSeek API account balance from the terminal. Zero dependencies, pure Node.js.
 
 ```bash
 $ deepseek-balance
@@ -11,34 +11,73 @@ DeepSeek ¥45.30
 
 ```bash
 npm install -g nuoming21/deepseek-balance
-deepseek-balance login
 ```
 
-Or from Gitee:
+Gitee mirror:
 
 ```bash
 npm install -g nuonuof/deepseek-balance
 ```
 
-Zero dependencies — uses only Node.js built-ins.
-
-## Usage
+## Quick Start
 
 ```bash
-deepseek-balance               # Compact output (status line)
-deepseek-balance full          # Detailed balance table
-deepseek-balance token         # Show current token (masked)
-deepseek-balance token <key>   # Set token directly
-deepseek-balance login         # Interactive login
-deepseek-balance cache         # Show cache TTL
-deepseek-balance cache 10      # Set cache to 10 minutes
-deepseek-balance cache off     # Disable cache
-deepseek-balance --help        # Full help
+# 1. Set your API key
+deepseek-balance token sk-your-key-here
+
+# 2. Check balance
+deepseek-balance
+
+# 3. Set auto-check every 30 minutes
+deepseek-balance interval 30
+```
+
+## Command Reference
+
+### Token
+
+```bash
+deepseek-balance token               # Show current key (masked)
+deepseek-balance token sk-xxx        # Set key directly
+deepseek-balance login               # Interactive prompt
+```
+
+### Balance
+
+```bash
+deepseek-balance                     # Compact: DeepSeek ¥45.30
+deepseek-balance full                # Detailed table
+```
+
+### Cache
+
+```bash
+deepseek-balance cache               # Show current TTL
+deepseek-balance cache 10            # Cache for 10 minutes
+deepseek-balance cache off           # Disable cache (always fresh)
+```
+
+### Interval (periodic check)
+
+```bash
+deepseek-balance interval            # Show current setting
+deepseek-balance interval 30         # Auto-check every 30 minutes
+deepseek-balance interval off        # Stop periodic checks
+```
+
+On Windows this creates a scheduled task via `schtasks`. On Linux/Mac it adds a `crontab` entry.
+
+### Help
+
+```bash
+deepseek-balance --help
 ```
 
 ## Claude Code Integration
 
-After installing globally, add to `~/.claude/settings.json`:
+### Status Line (terminal bottom)
+
+Add to `~/.claude/settings.json`:
 
 ```json
 {
@@ -49,30 +88,40 @@ After installing globally, add to `~/.claude/settings.json`:
 }
 ```
 
-Restart Claude Code and the balance appears at the terminal bottom, auto-refreshing every few minutes.
+Restart Claude Code — balance appears at the bottom, auto-refreshing.
 
-You can also type `/deepseek-balance` inside Claude Code if the skill is installed:
+### Slash Command
 
 ```bash
 npx skills add nuoming21/deepseek-balance -g -y
 ```
 
-## How It Works
+Then type `/deepseek-balance` inside Claude Code.
 
-- `deepseek-balance login` — Validates API key and saves to `~/.deepseek-balance.json`
-- `deepseek-balance` — Calls `GET https://api.deepseek.com/user/balance` (free endpoint)
-- 5-minute cache to avoid rate limiting
-- Color-coded: green ≥¥20, yellow ≥¥5, red <¥5
-
-## API
+## Programmatic API
 
 ```js
 const db = require("deepseek-balance");
-console.log(db.status()); // "DeepSeek ¥45.30"
-console.log(db.full());   // detailed table
+console.log(db.status());   // "DeepSeek ¥45.30"
+console.log(db.full());     // detailed table
 ```
+
+## Config
+
+- API key stored in `~/.deepseek-balance.json` (permission 600)
+- Cache stored inside the same file
+- Never committed: the file is not in the project directory
 
 ## Requirements
 
 - Node.js >= 16
 - DeepSeek API key from [platform.deepseek.com](https://platform.deepseek.com/api_keys)
+- The balance endpoint `GET /user/balance` is free (no token cost)
+
+## Color Codes
+
+| Color | Range |
+|-------|-------|
+| Green | >= ¥20 |
+| Yellow | >= ¥5 |
+| Red | < ¥5 |

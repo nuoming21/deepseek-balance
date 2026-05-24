@@ -90,25 +90,24 @@ Add to `~/.claude/settings.json`:
 
 Restart Claude Code — balance appears at the bottom, auto-refreshing. No AI involved.
 
-### Slash Command (`/deepseek-balance`)
+### Slash Commands (three separate commands)
 
-Create `~/.claude/commands/deepseek-balance.md`:
+Copy the `commands/` directory to `~/.claude/commands/`:
 
-```markdown
----
-description: Check DeepSeek API account balance
-argument-hint: [full|token|cache|interval|login]
-allowed-tools: Bash(deepseek-balance:*)
----
-
-Current DeepSeek balance:
-
-!`deepseek-balance full 2>&1`
-
-If "not logged in", tell user to run: deepseek-balance token sk-xxx
+```bash
+cp -r commands/* ~/.claude/commands/
 ```
 
-The `!`...`` runs BEFORE the AI — balance is pre-fetched and injected into the prompt. Much faster than a skill, minimal AI processing.
+Then restart Claude Code. Three commands available:
+
+| Command | Action |
+|---------|--------|
+| `/deepseek-balance` | Show current balance |
+| `/deepseek-token` | Show or set API key |
+| `/deepseek-interval 30` | Set check interval (minutes) |
+| `/deepseek-interval off` | Stop periodic checks |
+
+Each command uses `!`...`` to run the CLI before AI processing — no argument memorization needed.
 
 ## Programmatic API
 

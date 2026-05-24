@@ -22,6 +22,9 @@ When invoked, run the CLI directly. Do NOT call Python scripts or make raw HTTP 
 | Set cache TTL | `deepseek-balance cache <minutes>` |
 | Disable cache | `deepseek-balance cache off` |
 | Show cache setting | `deepseek-balance cache` |
+| Set check interval | `deepseek-balance interval <minutes>` |
+| Show interval | `deepseek-balance interval` |
+| Stop periodic check | `deepseek-balance interval off` |
 | Help | `deepseek-balance --help` |
 
 ## Status Line

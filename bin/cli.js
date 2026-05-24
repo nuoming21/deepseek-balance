@@ -140,6 +140,71 @@ function cmdShort(data) {
   process.stdout.write(`DeepSeek ${c}¥${total.toFixed(2)}${C.reset}\n`);
 }
 
+// ── Interval / Cron ──────────────────────────────────────
+const TASK_NAME = "DeepSeek Balance Check";
+
+function cmdInterval() {
+  const { execSync } = require("child_process");
+  const arg = process.argv[3];
+  const cfg = loadConfig() || {};
+  const isWin = process.platform === "win32";
+
+  if (arg === "off") {
+    if (isWin) {
+      try { execSync(`schtasks /delete /tn "${TASK_NAME}" /f 2>&1`, { encoding: "utf8", stdio: "pipe" }); } catch {}
+    } else {
+      try { execSync(`crontab -l 2>/dev/null | grep -v "deepseek-balance" | crontab - 2>&1`, { encoding: "utf8", stdio: "pipe" }); } catch {}
+    }
+    cfg.interval_minutes = 0;
+    saveConfig(cfg);
+    console.log(`Interval: ${C.yellow}OFF${C.reset}`);
+  } else if (arg && /^\d+$/.test(arg)) {
+    const mins = parseInt(arg, 10);
+    cfg.interval_minutes = mins;
+    saveConfig(cfg);
+
+    if (isWin) {
+      // Remove old task first
+      try { execSync(`schtasks /delete /tn "${TASK_NAME}" /f 2>&1`, { encoding: "utf8", stdio: "pipe" }); } catch {}
+      // Create new scheduled task
+      try {
+        execSync(`schtasks /create /sc minute /mo ${mins} /tn "${TASK_NAME}" /tr "deepseek-balance" /f 2>&1`, { encoding: "utf8", stdio: "pipe" });
+        console.log(`Interval: ${C.green}every ${mins} min${C.reset}`);
+      } catch (e) {
+        // schtasks may need admin — fall back to config-only
+        console.log(`Interval: ${C.green}${mins} min${C.reset} (saved to config, but schtasks failed: ${e.message.trim().slice(0, 60)})`);
+      }
+    } else {
+      // Linux/Mac: crontab
+      try {
+        const cronLine = `*/${mins} * * * * deepseek-balance >/dev/null 2>&1`;
+        const existing = execSync("crontab -l 2>/dev/null", { encoding: "utf8", stdio: "pipe" }).split("\n").filter((l) => !l.includes("deepseek-balance") && l.trim());
+        existing.push(cronLine);
+        execSync(`echo "${existing.join("\n")}" | crontab -`, { encoding: "utf8", stdio: "pipe" });
+        console.log(`Interval: ${C.green}every ${mins} min${C.reset}`);
+      } catch (e) {
+        console.log(`Interval: ${C.green}${mins} min${C.reset} (saved to config, but crontab failed: ${e.message.trim().slice(0, 60)})`);
+      }
+    }
+  } else {
+    const stored = cfg.interval_minutes || 0;
+    if (isWin) {
+      try {
+        const out = execSync(`schtasks /query /tn "${TASK_NAME}" /fo list 2>&1`, { encoding: "utf8", stdio: "pipe" });
+        console.log(`Interval: ${C.green}${out.split("\n").filter((l) => l.includes("Interval")).join(" ").trim() || `every ${stored} min`}${C.reset}`);
+        return;
+      } catch {}
+    } else {
+      try {
+        const out = execSync("crontab -l 2>/dev/null", { encoding: "utf8", stdio: "pipe" });
+        const match = out.match(/\*\/(\d+).*deepseek-balance/);
+        if (match) { console.log(`Interval: ${C.green}every ${match[1]} min${C.reset}`); return; }
+      } catch {}
+    }
+    console.log(`Interval: ${stored > 0 ? `every ${stored} min (config)` : "not set"}`);
+  }
+}
+
 // ── Help ─────────────────────────────────────────────────
 
 function showHelp() {
@@ -155,6 +220,9 @@ ${C.bold}Usage:${C.reset}
   ${C.cyan}deepseek-balance cache${C.reset}           Show cache setting
   ${C.cyan}deepseek-balance cache <N>${C.reset}       Set cache TTL (minutes)
   ${C.cyan}deepseek-balance cache off${C.reset}       Disable cache
+  ${C.cyan}deepseek-balance interval${C.reset}        Show check interval (cron)
+  ${C.cyan}deepseek-balance interval <N>${C.reset}    Check balance every N minutes
+  ${C.cyan}deepseek-balance interval off${C.reset}    Stop periodic checks
 
 ${C.bold}Examples:${C.reset}
   $ deepseek-balance
@@ -163,8 +231,8 @@ ${C.bold}Examples:${C.reset}
   $ deepseek-balance token sk-a1b2c3d4...
   Token saved.
 
-  $ deepseek-balance cache 10
-  Cache TTL: 10 min
+  $ deepseek-balance interval 30
+  Cron: every 30 min
 
 ${C.bold}Claude Code status line:${C.reset}
   { "statusLine": { "type": "command", "command": "deepseek-balance" } }
@@ -180,6 +248,7 @@ async function main() {
   if (cmd === "token") { cmdToken(); return; }
   if (cmd === "login") { await cmdLogin(); return; }
   if (cmd === "cache") { cmdCache(); return; }
+  if (cmd === "interval") { cmdInterval(); return; }
 
   // ── Balance queries below ──
   const cfg = loadConfig();

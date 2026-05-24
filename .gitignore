@@ -1,0 +1,20 @@
+# API key — NEVER commit
+config.json
+
+# Cache files
+.balance_cache.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

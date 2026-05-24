@@ -13,7 +13,7 @@ Real-time DeepSeek balance in the Claude Code terminal status line. Powered by t
 ## Prerequisites
 
 ```bash
-npm install -g deepseek-balance
+npm install -g nuoming21/deepseek-balance
 deepseek-balance login
 ```
 

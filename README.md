@@ -1,7 +1,5 @@
 # deepseek-balance
 
-[![npm version](https://img.shields.io/npm/v/deepseek-balance)](https://www.npmjs.com/package/deepseek-balance)
-
 Check your DeepSeek API account balance from the terminal. Also integrates as a Claude Code skill for real-time status line display.
 
 ```bash
@@ -12,8 +10,14 @@ DeepSeek ¥45.30
 ## Install
 
 ```bash
-npm install -g deepseek-balance
+npm install -g nuoming21/deepseek-balance
 deepseek-balance login
+```
+
+Or from Gitee:
+
+```bash
+npm install -g nuonuof/deepseek-balance
 ```
 
 Zero dependencies — uses only Node.js built-ins.

@@ -1,10 +1,12 @@
 # API key — NEVER commit
 config.json
-
-# Cache files
 .balance_cache.json
 
-# Python
+# npm
+node_modules/
+npm-debug.log*
+
+# Python (legacy)
 __pycache__/
 *.pyc
 *.pyo

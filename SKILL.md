@@ -1,80 +1,81 @@
 ---
 name: deepseek-balance
-description: This skill should be used when the user asks to "check DeepSeek balance", "query DeepSeek API credits", "查余额", or mentions "DeepSeek余额". Provides real-time balance display at the terminal bottom via statusLine, with interactive login via setup.py.
-version: 2.0.0
-allowed-tools: Bash(python:*,curl:*) Read
+description: This skill should be used when the user asks to "check DeepSeek balance", "query DeepSeek API credits", "查余额", or mentions "DeepSeek余额". Provides real-time balance display at the terminal bottom via statusLine. Requires the deepseek-balance CLI (npm install -g deepseek-balance).
+version: 3.0.0
+allowed-tools: Bash(deepseek-balance:*) Read
 user-invocable: true
 ---
 
-# DeepSeek API Balance — Real-Time Terminal Display
+# DeepSeek API Balance
 
-Displays DeepSeek API balance in real-time at the Claude Code terminal bottom via the status line.
+Real-time DeepSeek balance in the Claude Code terminal status line. Powered by the `deepseek-balance` npm CLI.
+
+## Prerequisites
+
+```bash
+npm install -g deepseek-balance
+deepseek-balance login
+```
+
+Get a key at https://platform.deepseek.com/api_keys.
 
 ## Quick Reference
 
 | Action | Command |
 |--------|---------|
-| Login/Setup | `python ${CLAUDE_SKILL_DIR}/setup.py` |
-| Check balance (full) | `python ${CLAUDE_SKILL_DIR}/check_balance.py --full` |
-| Check balance (compact) | `python ${CLAUDE_SKILL_DIR}/check_balance.py --short` |
-
-## Files
-
-- **`setup.py`** — Interactive login. Prompts for API key, validates against DeepSeek API, saves to `config.json`.
-- **`check_balance.py`** — Queries balance. `--short` = one-line for status bar, `--full` = detailed output. Cached for 5 minutes.
-- **`config.json`** — Created by setup, stores API key (auto-added to `.gitignore`).
+| Login | `deepseek-balance login` |
+| Compact (status line) | `deepseek-balance` |
+| Full detail | `deepseek-balance full` |
+| Help | `deepseek-balance --help` |
 
 ## Workflow
 
 ### First-Time Setup
 
-When the user hasn't logged in yet, run `setup.py` interactively:
+Run login to save the API key to `~/.deepseek-balance.json`:
 
 ```bash
-python ${CLAUDE_SKILL_DIR}/setup.py
+deepseek-balance login
 ```
-
-This prompts for the API key (get it from https://platform.deepseek.com/api_keys), validates it, and saves to `config.json`.
 
 ### Check Balance
 
-For a detailed view, run with `--full`:
-
 ```bash
-python ${CLAUDE_SKILL_DIR}/check_balance.py --full
+deepseek-balance         # => DeepSeek ¥45.30
+deepseek-balance full    # => detailed table
 ```
 
-### Status Line (Real-Time Bottom Display)
+### Status Line (Terminal Bottom)
 
-The status line is configured in `~/.claude/settings.json` to call `check_balance.py --short` periodically. Caches results for 5 minutes to avoid rate limiting.
+Add to `~/.claude/settings.json`:
 
 ```json
 {
   "statusLine": {
     "type": "command",
-    "command": "python ${CLAUDE_SKILL_DIR}/check_balance.py --short 2>/dev/null || echo 'DeepSeek: N/A'"
+    "command": "deepseek-balance 2>/dev/null || echo 'DeepSeek: N/A'"
   }
 }
 ```
 
-Compact output format: `DeepSeek ¥XX.XX` (color-coded: green ≥20, yellow ≥5, red <5)
-
 ### Re-login
 
-To change API key, run `setup.py` again — it detects the existing key and offers to replace it.
+```bash
+deepseek-balance login
+```
 
-## API Details
+## How It Works
 
-- **Endpoint**: `GET https://api.deepseek.com/user/balance`
-- **Auth**: `Authorization: Bearer <api_key>`
-- **Cost**: Free (no tokens consumed)
-- **Cache TTL**: 5 minutes (for status line efficiency)
+- Zero-dependency Node.js CLI — `https.get` + stdlib
+- Config: `~/.deepseek-balance.json` (permission 600)
+- Cache: stored in config, 5-minute TTL
+- API: `GET https://api.deepseek.com/user/balance` (free)
 
 ## Error Handling
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| "Not logged in" | No config.json | Run `setup.py` |
-| HTTP 401 | Invalid/expired key | Run `setup.py` to re-login |
-| "N/A" | Account unavailable | Check platform.deepseek.com |
-| Network error | No internet | Retry later |
+| "Not logged in" | No config | `deepseek-balance login` |
+| HTTP 401 | Invalid key | `deepseek-balance login` |
+| Network error | No internet | Stale cache used if available |
+| "N/A" | Account issue | Check platform.deepseek.com |

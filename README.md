@@ -25,10 +25,15 @@ Zero dependencies — uses only Node.js built-ins.
 ## Usage
 
 ```bash
-deepseek-balance           # Compact output (for status line)
-deepseek-balance full      # Detailed balance table
-deepseek-balance login     # Set or change API key
-deepseek-balance --help    # Help
+deepseek-balance               # Compact output (status line)
+deepseek-balance full          # Detailed balance table
+deepseek-balance token         # Show current token (masked)
+deepseek-balance token <key>   # Set token directly
+deepseek-balance login         # Interactive login
+deepseek-balance cache         # Show cache TTL
+deepseek-balance cache 10      # Set cache to 10 minutes
+deepseek-balance cache off     # Disable cache
+deepseek-balance --help        # Full help
 ```
 
 ## Claude Code Integration

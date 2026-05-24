@@ -90,24 +90,39 @@ Add to `~/.claude/settings.json`:
 
 Restart Claude Code — balance appears at the bottom, auto-refreshing. No AI involved.
 
-### Slash Commands (three separate commands)
+### Slash Commands (zero AI, hook-intercept)
 
-Copy the `commands/` directory to `~/.claude/commands/`:
+Add to `~/.claude/settings.json`:
 
-```bash
-cp -r commands/* ~/.claude/commands/
+```json
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python /path/to/deepseek-balance/hooks/intercept.py",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
 ```
 
-Then restart Claude Code. Three commands available:
+Then restart Claude Code. The hook intercepts commands before AI sees them:
 
-| Command | Action |
-|---------|--------|
-| `/deepseek-balance` | Show current balance |
-| `/deepseek-token` | Show or set API key |
-| `/deepseek-interval 30` | Set check interval (minutes) |
-| `/deepseek-interval off` | Stop periodic checks |
+| Command | Action | AI? |
+|---------|--------|-----|
+| `/deepseek-balance` | Show balance | No |
+| `/deepseek-token` | Show/set API key | No |
+| `/deepseek-interval 30` | Check every 30 min | No |
+| `/deepseek-interval off` | Stop periodic checks | No |
 
-Each command uses `!`...`` to run the CLI before AI processing — no argument memorization needed.
+The hook script catches `/deepseek-*` prompts, runs the CLI directly, and exits 2 to block AI processing entirely.
 
 ## Programmatic API
 

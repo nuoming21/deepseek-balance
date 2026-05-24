@@ -41,7 +41,7 @@ Configured automatically in `~/.claude/settings.json`:
 {
   "statusLine": {
     "type": "command",
-    "command": "python /path/to/check_balance.py --short 2>/dev/null || echo 'DeepSeek: N/A'"
+    "command": "python ${CLAUDE_SKILL_DIR}/check_balance.py --short 2>/dev/null || echo 'DeepSeek: N/A'"
   }
 }
 ```

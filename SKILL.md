@@ -14,15 +14,15 @@ Displays DeepSeek API balance in real-time at the Claude Code terminal bottom vi
 
 | Action | Command |
 |--------|---------|
-| Login/Setup | `python D:/cc-connect-workplace/deepseek-balance/setup.py` |
-| Check balance (full) | `python D:/cc-connect-workplace/deepseek-balance/check_balance.py --full` |
-| Check balance (compact) | `python D:/cc-connect-workplace/deepseek-balance/check_balance.py --short` |
+| Login/Setup | `python ${CLAUDE_SKILL_DIR}/setup.py` |
+| Check balance (full) | `python ${CLAUDE_SKILL_DIR}/check_balance.py --full` |
+| Check balance (compact) | `python ${CLAUDE_SKILL_DIR}/check_balance.py --short` |
 
 ## Files
 
-- **`setup.py`** — Interactive login. Prompts for API key, validates against DeepSeek API, saves encrypted config.
-- **`check_balance.py`** — Queries balance. `--short` = one-line for status bar, `--full` = detailed output. Caches results for 5 minutes.
-- **`config.json`** — Created by setup, stores API key (permission 600).
+- **`setup.py`** — Interactive login. Prompts for API key, validates against DeepSeek API, saves to `config.json`.
+- **`check_balance.py`** — Queries balance. `--short` = one-line for status bar, `--full` = detailed output. Cached for 5 minutes.
+- **`config.json`** — Created by setup, stores API key (auto-added to `.gitignore`).
 
 ## Workflow
 
@@ -31,7 +31,7 @@ Displays DeepSeek API balance in real-time at the Claude Code terminal bottom vi
 When the user hasn't logged in yet, run `setup.py` interactively:
 
 ```bash
-python D:/cc-connect-workplace/deepseek-balance/setup.py
+python ${CLAUDE_SKILL_DIR}/setup.py
 ```
 
 This prompts for the API key (get it from https://platform.deepseek.com/api_keys), validates it, and saves to `config.json`.
@@ -41,12 +41,21 @@ This prompts for the API key (get it from https://platform.deepseek.com/api_keys
 For a detailed view, run with `--full`:
 
 ```bash
-python D:/cc-connect-workplace/deepseek-balance/check_balance.py --full
+python ${CLAUDE_SKILL_DIR}/check_balance.py --full
 ```
 
 ### Status Line (Real-Time Bottom Display)
 
-The status line is configured in `~/.claude/settings.json` to call `check_balance.py --short` periodically. The script caches results for 5 minutes to avoid rate limiting.
+The status line is configured in `~/.claude/settings.json` to call `check_balance.py --short` periodically. Caches results for 5 minutes to avoid rate limiting.
+
+```json
+{
+  "statusLine": {
+    "type": "command",
+    "command": "python ${CLAUDE_SKILL_DIR}/check_balance.py --short 2>/dev/null || echo 'DeepSeek: N/A'"
+  }
+}
+```
 
 Compact output format: `DeepSeek ¥XX.XX` (color-coded: green ≥20, yellow ≥5, red <5)
 

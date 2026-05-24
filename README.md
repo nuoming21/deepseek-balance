@@ -75,7 +75,7 @@ deepseek-balance --help
 
 ## Claude Code Integration
 
-### Status Line (terminal bottom)
+### Status Line (terminal bottom, zero AI)
 
 Add to `~/.claude/settings.json`:
 
@@ -88,15 +88,27 @@ Add to `~/.claude/settings.json`:
 }
 ```
 
-Restart Claude Code — balance appears at the bottom, auto-refreshing.
+Restart Claude Code — balance appears at the bottom, auto-refreshing. No AI involved.
 
-### Slash Command
+### Slash Command (`/deepseek-balance`)
 
-```bash
-npx skills add nuoming21/deepseek-balance -g -y
+Create `~/.claude/commands/deepseek-balance.md`:
+
+```markdown
+---
+description: Check DeepSeek API account balance
+argument-hint: [full|token|cache|interval|login]
+allowed-tools: Bash(deepseek-balance:*)
+---
+
+Current DeepSeek balance:
+
+!`deepseek-balance full 2>&1`
+
+If "not logged in", tell user to run: deepseek-balance token sk-xxx
 ```
 
-Then type `/deepseek-balance` inside Claude Code.
+The `!`...`` runs BEFORE the AI — balance is pre-fetched and injected into the prompt. Much faster than a skill, minimal AI processing.
 
 ## Programmatic API
 
